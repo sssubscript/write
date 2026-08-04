@@ -1,0 +1,42 @@
+{
+  "name": "@subscript-write/app",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite --host 0.0.0.0 --port 1430 --strictPort",
+    "build": "tsc -b && vite build",
+    "build:embed": "tsc -b && vite build --config vite.embed.config.ts",
+    "lint": "tsc -b && biome check src vite.config.ts vite.embed.config.ts",
+    "test": "vitest run",
+    "cf:dev": "pnpm run build && wrangler dev",
+    "deploy:dry-run": "pnpm run build && wrangler deploy --dry-run",
+    "deploy": "pnpm run build && wrangler deploy"
+  },
+  "dependencies": {
+    "@heroicons/react": "^2.2.0",
+    "@radix-ui/react-dialog": "^1.1.15",
+    "@radix-ui/react-dropdown-menu": "^2.1.16",
+    "@radix-ui/react-tooltip": "^1.2.8",
+    "@vitejs/plugin-react": "^6.0.1",
+    "dompurify": "3.3.2",
+    "react": "^19.2.4",
+    "react-dom": "^19.2.4",
+    "y-indexeddb": "^9.0.12",
+    "y-webrtc": "^10.3.0",
+    "yjs": "^13.6.30"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^5.20260730.1",
+    "@types/node": "^24.12.2",
+    "@types/react": "^19.2.14",
+    "@types/react-dom": "^19.2.3",
+    "esbuild": "^0.27.0",
+    "fake-indexeddb": "^6.2.5",
+    "jsdom": "^26.1.0",
+    "typescript": "^5.9.3",
+    "vite": "^8.0.4",
+    "vitest": "^3.2.4",
+    "wrangler": "^4.12.0"
+  }
+}

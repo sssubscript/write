@@ -1,0 +1,20 @@
+{
+  "name": "subscript-write",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Write: a free, open-source, local-first screenwriting app. A project of Subscript (https://subscript.to).",
+  "scripts": {
+    "dev": "pnpm --dir app dev",
+    "signal": "pnpm --dir signaling dev",
+    "build": "pnpm --dir app build",
+    "build:embed": "pnpm --dir app build:embed",
+    "lint": "pnpm --dir app exec tsc -b && biome check && pnpm --dir signaling run check",
+    "test": "pnpm --dir app test",
+    "deploy": "pnpm --dir app deploy",
+    "deploy:signaling": "pnpm --dir signaling deploy"
+  },
+  "license": "MIT",
+  "devDependencies": {
+    "@biomejs/biome": "^2.3.3"
+  }
+}

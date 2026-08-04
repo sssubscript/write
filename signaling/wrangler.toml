@@ -1,0 +1,10 @@
+name = "subscript-write-signaling"
+main = "src/index.ts"
+compatibility_date = "2026-04-21"
+
+[durable_objects]
+bindings = [{ name = "SIGNAL_BROKER", class_name = "SignalBroker" }]
+
+[[migrations]]
+tag = "v1"
+new_sqlite_classes = ["SignalBroker"]

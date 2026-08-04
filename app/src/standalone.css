@@ -1,0 +1,10 @@
+/*
+ * Page-level chrome for the standalone write.subscript.to deployment only.
+ * Not imported by the embeddable library build, since a host page owns its
+ * own html/body layout.
+ */
+html, body, #root { height: 100%; margin: 0; }
+
+@media (max-width: 760px) {
+  html, body, #root { min-height: 100%; min-height: 100dvh; }
+}
