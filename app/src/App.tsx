@@ -918,7 +918,15 @@ function App({ config: configOverrides }: { config?: Partial<WriteConfig> } = {}
     if (mode !== "write") return;
     const paragraphElement = editedParagraphElement(event.target);
     const paragraphId = paragraphElement?.dataset.paragraphId;
-    if (paragraphId) project?.updateParagraph(paragraphId, paragraphElement.textContent || "");
+    if (!project || !paragraphId) return;
+    const range = window.getSelection()?.rangeCount ? window.getSelection()!.getRangeAt(0) : null;
+    if (range && paragraphElement.contains(range.endContainer)) {
+      const before = document.createRange();
+      before.selectNodeContents(paragraphElement);
+      before.setEnd(range.endContainer, range.endOffset);
+      pendingCaret.current = { paragraphId, offset: before.toString().length };
+    }
+    project.updateParagraph(paragraphId, paragraphElement.textContent || "");
   };
 
   const publishCursor = (paragraphId: string, target: HTMLTextAreaElement) => {
