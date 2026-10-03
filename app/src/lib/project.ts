@@ -2,7 +2,7 @@ import { IndexeddbPersistence } from "y-indexeddb";
 import { WebrtcProvider } from "y-webrtc";
 import * as Y from "yjs";
 import { transformAnnotations } from "./annotation_ranges";
-import type { WriteConfig } from "./config";
+import { signalingUrls, type WriteConfig } from "./config";
 import type { ScreenplayParagraph } from "./fdx";
 import { blankParagraph } from "./fdx";
 import type { DeviceIdentity, Signed } from "./identity";
@@ -800,10 +800,7 @@ export class LocalProject {
 
   connect(room: string) {
     this.provider?.destroy();
-    const signaling = this.config.signalingUrl
-      .split(",")
-      .map((url) => url.trim())
-      .filter(Boolean);
+    const signaling = signalingUrls(this.config.signalingUrl);
     const iceServers: RTCIceServer[] = [{ urls: this.config.stunUrl }];
     if (this.config.turnUrl) {
       iceServers.push({

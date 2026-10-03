@@ -38,6 +38,6 @@ Use that URL as `VITE_SIGNALING_URL` when building the app.
 
 ## Do you need to self-host this?
 
-No. By default `VITE_SIGNALING_URL` points at the public `wss://y-webrtc-eu.fly.dev` relay, so Write works out of the box without deploying anything.
+No. By default `VITE_SIGNALING_URL` points at the public `wss://y-webrtc-signaling.fly.dev` and `wss://y-webrtc.fly.dev` relays, so Write works out of the box without deploying anything. These are community-run relays with no uptime guarantee; for production, deploy your own worker.
 
-Write is local-first: your script never leaves your browser except peer-to-peer over WebRTC. This worker (or the public relay) only helps two browsers find each other; it never sees document content. If you'd rather not depend on a third-party relay, deploy your own copy with the steps above and point `VITE_SIGNALING_URL` at it.
+Write is local-first: your script never leaves your browser except peer-to-peer over WebRTC. This worker (or the public relays) only helps two browsers find each other; it never sees document content. If you'd rather not depend on a third-party relay, deploy your own copy with the steps above and point `VITE_SIGNALING_URL` at it.
