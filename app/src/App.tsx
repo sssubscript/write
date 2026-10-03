@@ -347,7 +347,12 @@ function App({ config: configOverrides }: { config?: Partial<WriteConfig> } = {}
     let active = true;
     let opened: LocalProject | null = null;
     void (async () => {
-      const loadedIdentity = await loadIdentity(config);
+      // Identity loading can't be cancelled, so ignore its result (or failure) after unmount.
+      const loadedIdentity = await loadIdentity(config).catch((error) => {
+        if (active) throw error;
+        return null;
+      });
+      if (!active || !loadedIdentity) return;
       const loadedProject = await LocalProject.open(
         loadedIdentity,
         config,
