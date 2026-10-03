@@ -29,6 +29,7 @@ import {
   type ScreenplayParagraph,
   serializeFdx,
 } from "./lib/fdx";
+import { feedbackRedirectUrl } from "./lib/feedback";
 import { type DeviceIdentity, loadIdentity, renameIdentity } from "./lib/identity";
 import { paginateScreenplay } from "./lib/pagination";
 import { loadPanelPreferences, savePanelPreferences } from "./lib/panel_preferences";
@@ -528,7 +529,9 @@ function App({ config: configOverrides }: { config?: Partial<WriteConfig> } = {}
       });
       const result = (await response.json()) as { redirect_url?: string; error?: string };
       if (!response.ok || !result.redirect_url) throw new Error(result.error || "Upload failed");
-      window.location.assign(result.redirect_url);
+      window.location.assign(
+        feedbackRedirectUrl(result.redirect_url, config.homepage, window.location.origin),
+      );
     } catch {
       setFeedbackStatus("error");
     }
