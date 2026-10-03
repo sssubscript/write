@@ -891,20 +891,34 @@ function App({ config: configOverrides }: { config?: Partial<WriteConfig> } = {}
     }
   };
 
-  const handleScreenplayKey = (event: React.KeyboardEvent<HTMLDivElement>) => {
-    if (mode !== "write") return;
-    if (deleteSelectionAcrossElements(event)) return;
+  const editedParagraphElement = (target: EventTarget) => {
     const anchorNode = window.getSelection()?.anchorNode;
-    const paragraphElement =
-      (event.target as HTMLElement).closest<HTMLElement>(".paragraph-editor[data-paragraph-id]") ||
+    return (
+      (target as HTMLElement).closest<HTMLElement>(".paragraph-editor[data-paragraph-id]") ||
       (anchorNode?.nodeType === Node.ELEMENT_NODE
         ? (anchorNode as Element)
         : anchorNode?.parentElement
-      )?.closest<HTMLElement>(".paragraph-editor[data-paragraph-id]");
+      )?.closest<HTMLElement>(".paragraph-editor[data-paragraph-id]")
+    );
+  };
+
+  const handleScreenplayKey = (event: React.KeyboardEvent<HTMLDivElement>) => {
+    if (mode !== "write") return;
+    if (deleteSelectionAcrossElements(event)) return;
+    const paragraphElement = editedParagraphElement(event.target);
     const paragraph = snapshot.paragraphs.find(
       (item) => item.id === paragraphElement?.dataset.paragraphId,
     );
     if (paragraph && paragraphElement) void handleWritingKey(event, paragraph, paragraphElement);
+  };
+
+  // Input events fire on the contentEditable host rather than the paragraph being typed in,
+  // so resolve the edited paragraph from the selection and push its text into the shared doc.
+  const handleScreenplayInput = (event: React.FormEvent<HTMLDivElement>) => {
+    if (mode !== "write") return;
+    const paragraphElement = editedParagraphElement(event.target);
+    const paragraphId = paragraphElement?.dataset.paragraphId;
+    if (paragraphId) project?.updateParagraph(paragraphId, paragraphElement.textContent || "");
   };
 
   const publishCursor = (paragraphId: string, target: HTMLTextAreaElement) => {
@@ -1418,6 +1432,7 @@ function App({ config: configOverrides }: { config?: Partial<WriteConfig> } = {}
                   contentEditable={mode === "write" && !isHistoryPreview}
                   suppressContentEditableWarning
                   onKeyDown={handleScreenplayKey}
+                  onInput={handleScreenplayInput}
                   onCopy={copyFormattedSelection}
                 >
                   {page.map((paragraph) => {
@@ -1510,12 +1525,6 @@ function App({ config: configOverrides }: { config?: Partial<WriteConfig> } = {}
                               paragraph.id === activeParagraphId,
                             )}
                             onFocus={() => setActiveParagraphId(paragraph.id)}
-                            onInput={(event) => {
-                              project?.updateParagraph(
-                                paragraph.id,
-                                event.currentTarget.textContent || "",
-                              );
-                            }}
                             onBlur={() => {
                               setActiveParagraphId(null);
                               void project?.commitParagraph(paragraph.id);
