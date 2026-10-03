@@ -223,6 +223,8 @@ const mapParagraph = (paragraph: ScreenplayParagraph) => {
   return map;
 };
 
+const openingProjects = new Map<string, Promise<LocalProject>>();
+
 export class LocalProject {
   readonly doc = new Y.Doc();
   readonly persistence: IndexeddbPersistence;
@@ -267,13 +269,24 @@ export class LocalProject {
     projectId = "local-draft",
     initialTitle = "Untitled screenplay",
   ) {
-    const project = new LocalProject(identity, projectId, config);
-    await project.persistence.whenSynced;
-    project.migrateParagraphText();
-    if (project.paragraphStore.length === 0) {
-      await project.createDocument(initialTitle);
+    // Opening the same empty project twice (e.g. a StrictMode double effect) would create two
+    // blank documents that merge in IndexedDB, so each open waits for the previous one to finish.
+    const previous = openingProjects.get(projectId);
+    const opening = (previous?.catch(() => undefined) ?? Promise.resolve()).then(async () => {
+      const project = new LocalProject(identity, projectId, config);
+      await project.persistence.whenSynced;
+      project.migrateParagraphText();
+      if (project.paragraphStore.length === 0) {
+        project.createDocument(initialTitle);
+      }
+      return project;
+    });
+    openingProjects.set(projectId, opening);
+    try {
+      return await opening;
+    } finally {
+      if (openingProjects.get(projectId) === opening) openingProjects.delete(projectId);
     }
-    return project;
   }
 
   subscribe = (listener: () => void) => {
