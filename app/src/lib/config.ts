@@ -11,10 +11,16 @@ export type WriteConfig = {
 
 export const defaultConfig: WriteConfig = {
   homepage: "https://subscript.to",
-  signalingUrl: "wss://y-webrtc-eu.fly.dev",
+  signalingUrl: "wss://y-webrtc-signaling.fly.dev,wss://y-webrtc.fly.dev",
   stunUrl: "stun:stun.l.google.com:19302",
   subscriptEnabled: false,
 };
+
+export const signalingUrls = (value: string) =>
+  value
+    .split(",")
+    .map((url) => url.trim())
+    .filter(Boolean);
 
 export const mergeConfig = (overrides?: Partial<WriteConfig>): WriteConfig => {
   const defined = Object.fromEntries(

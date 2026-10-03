@@ -24,7 +24,7 @@ pnpm install
 pnpm dev
 ```
 
-This starts the app at `http://localhost:1430`. By default it connects to the public STUN server included below, so peer-to-peer collaboration works out of the box; run your own [signaling worker](./signaling) if you want to self-host that piece too.
+This starts the app at `http://localhost:1430`. By default it connects to public y-webrtc signaling relays and the public STUN server included below, so peer-to-peer collaboration works out of the box; run your own [signaling worker](./signaling) if you want to self-host that piece too.
 
 ### Scripts
 
@@ -43,7 +43,7 @@ Copy `app/.env.example` to `app/.env.local` and adjust as needed:
 | Variable | Purpose | Default |
 | --- | --- | --- |
 | `VITE_HOMEPAGE` | Where the wordmark links | `https://subscript.to` |
-| `VITE_SIGNALING_URL` | WebRTC signaling endpoint | `ws://localhost:8787` (local `wrangler dev`) |
+| `VITE_SIGNALING_URL` | WebRTC signaling endpoints, comma-separated | `wss://y-webrtc-signaling.fly.dev,wss://y-webrtc.fly.dev` |
 | `VITE_STUN_URL` | STUN server for NAT traversal | `stun:stun.l.google.com:19302` |
 | `VITE_TURN_URL` / `VITE_TURN_USERNAME` / `VITE_TURN_CREDENTIAL` | Optional TURN relay for peers behind restrictive NATs | unset |
 
