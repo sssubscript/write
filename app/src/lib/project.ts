@@ -1,4 +1,3 @@
-import { IndexeddbPersistence } from "y-indexeddb";
 import { WebrtcProvider } from "y-webrtc";
 import * as Y from "yjs";
 import { transformAnnotations } from "./annotation_ranges";
@@ -7,6 +6,7 @@ import type { ScreenplayParagraph } from "./fdx";
 import { blankParagraph } from "./fdx";
 import type { DeviceIdentity, Signed } from "./identity";
 import { digest, sign as signPayload, verify } from "./identity";
+import { ResilientIndexeddbPersistence } from "./persistence";
 
 export type AnnotationKind = "highlight" | "strikethrough" | "replace" | "comment";
 
@@ -227,7 +227,7 @@ const openingProjects = new Map<string, Promise<LocalProject>>();
 
 export class LocalProject {
   readonly doc = new Y.Doc();
-  readonly persistence: IndexeddbPersistence;
+  readonly persistence: ResilientIndexeddbPersistence;
   private readonly meta = this.doc.getMap<string>("meta");
   private readonly paragraphStore = this.doc.getArray<Y.Map<unknown>>("paragraphs");
   private readonly annotationStore = this.doc.getArray<Signed<Annotation>>("annotations");
@@ -256,7 +256,7 @@ export class LocalProject {
     projectId: string,
     private readonly config: WriteConfig,
   ) {
-    this.persistence = new IndexeddbPersistence(`subscript-editor-${projectId}`, this.doc);
+    this.persistence = new ResilientIndexeddbPersistence(`subscript-editor-${projectId}`, this.doc);
     this.doc.on("update", this.emit);
     this.undoManager.on("stack-item-added", this.emit);
     this.undoManager.on("stack-item-popped", this.emit);
