@@ -11,6 +11,7 @@ import * as Tooltip from "@radix-ui/react-tooltip";
 import { useEffect, useLayoutEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import { flushSync } from "react-dom";
 import { subscriptMark, subscriptWordmark } from "./assets/subscript-logo";
+import { createAnalytics, persistFirstTouch } from "./lib/analytics";
 import { annotationSegments } from "./lib/annotation_ranges";
 import { mergeConfig, type WriteConfig } from "./lib/config";
 import {
@@ -188,6 +189,7 @@ function useProject(project: LocalProject | null) {
 
 function App({ config: configOverrides }: { config?: Partial<WriteConfig> } = {}) {
   const config = useMemo(() => mergeConfig(configOverrides), [configOverrides]);
+  const analytics = useMemo(() => createAnalytics(config.analytics), [config.analytics]);
   const [identity, setIdentity] = useState<DeviceIdentity | null>(null);
   const [project, setProject] = useState<LocalProject | null>(null);
   const [projectId, setProjectId] = useState("local-draft");
@@ -344,6 +346,11 @@ function App({ config: configOverrides }: { config?: Partial<WriteConfig> } = {}
   }, []);
 
   useEffect(() => {
+    persistFirstTouch(window.location.href, document.referrer);
+    analytics.recordFirstTouch();
+  }, [analytics]);
+
+  useEffect(() => {
     let active = true;
     let opened: LocalProject | null = null;
     void (async () => {
@@ -366,12 +373,13 @@ function App({ config: configOverrides }: { config?: Partial<WriteConfig> } = {}
       setFocusParagraphId(loadedProject.snapshot().paragraphs[0]?.id || null);
       const room = new URLSearchParams(location.hash.slice(1)).get("room");
       if (room) loadedProject.connect(room);
+      analytics.track("document opened", { shared: Boolean(room) });
     })();
     return () => {
       active = false;
       opened?.destroy();
     };
-  }, [config, pendingProjectTitle, projectId]);
+  }, [analytics, config, pendingProjectTitle, projectId]);
 
   useEffect(() => {
     if (!project || !snapshot.title || snapshot.title === "Opening local draftâ€¦") return;
@@ -498,6 +506,7 @@ function App({ config: configOverrides }: { config?: Partial<WriteConfig> } = {}
     link.download = `${snapshot.title.replace(/[^a-z0-9]+/gi, "-").replace(/^-|-$/g, "") || "screenplay"}.fdx`;
     link.click();
     URL.revokeObjectURL(link.href);
+    analytics.track("document exported", { format: "fdx" });
   };
 
   const exportArchive = () => {
@@ -510,6 +519,7 @@ function App({ config: configOverrides }: { config?: Partial<WriteConfig> } = {}
     link.download = `${snapshot.title.replace(/[^a-z0-9]+/gi, "-").replace(/^-|-$/g, "") || "screenplay"}.subscript`;
     link.click();
     URL.revokeObjectURL(link.href);
+    analytics.track("document exported", { format: "subscript" });
   };
 
   const getFeedback = async () => {
@@ -534,6 +544,7 @@ function App({ config: configOverrides }: { config?: Partial<WriteConfig> } = {}
       });
       const result = (await response.json()) as { redirect_url?: string; error?: string };
       if (!response.ok || !result.redirect_url) throw new Error(result.error || "Upload failed");
+      analytics.track("feedback shared", { format: "fdx" });
       window.location.assign(
         feedbackRedirectUrl(result.redirect_url, config.homepage, window.location.origin),
       );
@@ -752,6 +763,7 @@ function App({ config: configOverrides }: { config?: Partial<WriteConfig> } = {}
       setProject(null);
       setProjectId(nextProjectId);
     });
+    analytics.track("document created");
     document.querySelector<HTMLElement>(".editor-stage")?.scrollTo({ top: 0 });
     setFocusParagraphId(null);
   };

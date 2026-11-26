@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { mount } from "./embed";
 
 // jsdom does not implement CSS.escape, which the editor uses to look up paragraphs by id.
@@ -51,6 +51,40 @@ describe("screenplay editing", () => {
     await waitFor(() => texts().length > 0 && texts());
     expect(texts()).toContain("INT. KITCHEN - NIGHT");
     reopenedHandle.unmount();
+    await new Promise((resolve) => setTimeout(resolve, 100));
+  }, 15000);
+});
+
+describe("analytics bridge", () => {
+  it("emits content-free lifecycle events to a host-injected bridge", async () => {
+    // jsdom does not implement scrolling, which creating a script uses.
+    Element.prototype.scrollTo ??= () => undefined;
+    const capture = vi.fn();
+    const setPersonPropertiesOnce = vi.fn();
+    const host = document.createElement("div");
+    document.body.append(host);
+    const handle = mount(host, { analytics: { capture, setPersonPropertiesOnce } });
+    await waitFor(() => firstParagraph(host));
+    await waitFor(() => capture.mock.calls.length > 0);
+    expect(capture).toHaveBeenCalledWith("document opened", { shared: false });
+    expect(setPersonPropertiesOnce).toHaveBeenCalledWith(
+      expect.objectContaining({ landing_page: expect.any(String) }),
+    );
+
+    host.querySelector<HTMLButtonElement>(".new-script-button")!.click();
+    const titleInput = await waitFor(() =>
+      document.querySelector<HTMLInputElement>("#new-script-title"),
+    );
+    titleInput.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter", bubbles: true }));
+    await waitFor(() => capture.mock.calls.some(([event]) => event === "document created"));
+    await waitFor(
+      () => capture.mock.calls.filter(([event]) => event === "document opened").length > 1,
+    );
+
+    for (const [, properties] of capture.mock.calls) {
+      expect(JSON.stringify(properties)).not.toMatch(/screenplay|untitled/i);
+    }
+    handle.unmount();
     await new Promise((resolve) => setTimeout(resolve, 100));
   }, 15000);
 });
