@@ -1,3 +1,5 @@
+import type { AnalyticsBridge } from "./analytics";
+
 export type WriteConfig = {
   homepage: string;
   signalingUrl: string;
@@ -7,6 +9,8 @@ export type WriteConfig = {
   turnCredential?: string;
   idpConfigUrl?: string;
   subscriptEnabled: boolean;
+  /** Host-injected analytics bridge; Write sends no analytics without one. */
+  analytics?: AnalyticsBridge;
 };
 
 export const defaultConfig: WriteConfig = {
