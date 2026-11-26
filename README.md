@@ -88,6 +88,19 @@ editor.unmount();
 
 `mount(element, config?)` returns `{ unmount }`. All config is optional and falls back to the same defaults as the standalone build (public STUN, subscript.to homepage, no IDP). See [`app/src/lib/config.ts`](./app/src/lib/config.ts) for the full `WriteConfig` shape — it's the same options as the `VITE_*` env vars below, just provided at runtime instead of build time, since an embedded bundle has no build-time env vars of its own.
 
+### Analytics bridge
+
+Write sends no analytics on its own: it loads no analytics SDK, holds no keys, and makes no analytics requests. A host page that embeds Write can inject a bridge, either as the `analytics` option to `mount()` or, for the custom element, as `window.subscriptWriteAnalytics` (set before or after the editor mounts), and forward what it receives to its own analytics:
+
+```js
+window.subscriptWriteAnalytics = {
+  capture: (event, properties) => posthog.capture(event, properties),
+  setPersonPropertiesOnce: (properties) => posthog.setPersonProperties({}, properties),
+};
+```
+
+Without a bridge every call is a silent no-op. Write emits `document created`, `document opened` (`shared`), `document exported` (`format`: `fdx` or `subscript`), and `feedback shared` (`format`), and passes first-touch attribution (`utm_source`, `utm_medium`, `utm_campaign`, `referring_domain`, `landing_page`) recorded on the first visit to `setPersonPropertiesOnce`. Events never carry document content, titles, or file names; properties outside each event's allowlist are dropped.
+
 ## Self-hosting
 
 Everything Write depends on can be run by you:

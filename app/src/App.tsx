@@ -11,8 +11,8 @@ import * as Tooltip from "@radix-ui/react-tooltip";
 import { useEffect, useLayoutEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import { flushSync } from "react-dom";
 import { subscriptMark, subscriptWordmark } from "./assets/subscript-logo";
-import { annotationSegments } from "./lib/annotation_ranges";
 import { createAnalytics, persistFirstTouch } from "./lib/analytics";
+import { annotationSegments } from "./lib/annotation_ranges";
 import { mergeConfig, type WriteConfig } from "./lib/config";
 import {
   deleteAtSelection,
