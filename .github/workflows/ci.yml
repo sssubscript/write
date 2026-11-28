@@ -8,6 +8,9 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
     steps:
       - uses: actions/checkout@v4
 
@@ -28,4 +31,12 @@ jobs:
         run: pnpm run lint
 
       - name: Test
-        run: pnpm run test
+        run: pnpm --dir app exec vitest run --coverage
+
+      - name: Upload coverage to Qlty
+        if: ${{ !github.event.pull_request.head.repo.fork }}
+        uses: qltysh/qlty-action/coverage@v2
+        with:
+          oidc: true
+          files: app/coverage/lcov.info
+          add-prefix: app/

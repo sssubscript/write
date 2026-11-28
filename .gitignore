@@ -5,6 +5,7 @@ node_modules
 dist
 dist-embed
 dist-ssr
+coverage
 *.local
 
 # Env files
